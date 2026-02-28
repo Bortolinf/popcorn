@@ -1,0 +1,68 @@
+<UserControl x:Class="Popcorn.UI.Views.ModalidadeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="#F5F6FA">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,12">
+            <Button Content="+ Nova Modalidade" Command="{Binding NovoCommand}"
+                    Background="#1E3A5F" Foreground="White" Padding="14,7"
+                    BorderThickness="0" FontWeight="Bold" Cursor="Hand"/>
+            <TextBlock Text="{Binding Mensagem}" Foreground="#27AE60"
+                       VerticalAlignment="Center" Margin="14,0,0,0" FontSize="13"/>
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="280"/>
+            </Grid.ColumnDefinitions>
+
+            <DataGrid Grid.Column="0" ItemsSource="{Binding Modalidades}"
+                      SelectedItem="{Binding SelectedModalidade}"
+                      AutoGenerateColumns="False" IsReadOnly="True"
+                      Margin="0,0,16,0" GridLinesVisibility="Horizontal"
+                      BorderBrush="#DDE" BorderThickness="1">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Descrição"        Binding="{Binding Descricao}"       Width="*"/>
+                    <DataGridCheckBoxColumn Header="Possui Voltas"  Binding="{Binding PossuiVoltas}"   Width="110"/>
+                    <DataGridCheckBoxColumn Header="Largada Baterias" Binding="{Binding LargadaBaterias}" Width="130"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <Border Grid.Column="1" Background="White" CornerRadius="8" Padding="18"
+                    Visibility="{Binding IsEditing, Converter={StaticResource BoolToVisibility}}"
+                    Effect="{StaticResource CardShadow}">
+                <StackPanel>
+                    <TextBlock Text="Modalidade" FontSize="15" FontWeight="Bold"
+                               Foreground="#1E3A5F" Margin="0,0,0,14"/>
+
+                    <TextBlock Text="Descrição *" FontSize="11" Foreground="#555" Margin="0,0,0,3"/>
+                    <TextBox Text="{Binding Descricao, UpdateSourceTrigger=PropertyChanged}"
+                             Padding="5,4" Margin="0,0,0,12" BorderBrush="#BDC3C7"/>
+
+                    <CheckBox Content="Possui Voltas" IsChecked="{Binding PossuiVoltas}"
+                              Margin="0,0,0,8"/>
+                    <CheckBox Content="Largada em Baterias" IsChecked="{Binding LargadaBaterias}"
+                              Margin="0,0,0,20"/>
+
+                    <StackPanel Orientation="Horizontal">
+                        <Button Content="Salvar" Command="{Binding SalvarCommand}"
+                                Background="#27AE60" Foreground="White"
+                                Padding="12,6" BorderThickness="0" Cursor="Hand" Margin="0,0,6,0"/>
+                        <Button Content="Excluir" Command="{Binding ExcluirCommand}"
+                                Background="#E74C3C" Foreground="White"
+                                Padding="12,6" BorderThickness="0" Cursor="Hand" Margin="0,0,6,0"/>
+                        <Button Content="Cancelar" Command="{Binding CancelarCommand}"
+                                Background="#95A5A6" Foreground="White"
+                                Padding="12,6" BorderThickness="0" Cursor="Hand"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

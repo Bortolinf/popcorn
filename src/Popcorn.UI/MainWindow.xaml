@@ -1,0 +1,90 @@
+<Window x:Class="Popcorn.UI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:Popcorn.UI.ViewModels"
+        xmlns:views="clr-namespace:Popcorn.UI.Views"
+        Title="Popcorn — Cronometragem Esportiva"
+        WindowState="Maximized" MinWidth="900" MinHeight="600">
+
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type vm:DashboardViewModel}">
+            <views:DashboardView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:EventoViewModel}">
+            <views:EventoView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:AtletaViewModel}">
+            <views:AtletaView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:CategoriaViewModel}">
+            <views:CategoriaView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:CampeonatoViewModel}">
+            <views:CampeonatoView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ModalidadeViewModel}">
+            <views:ModalidadeView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:CronometragemViewModel}">
+            <views:CronometragemView/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ResultadoViewModel}">
+            <views:ResultadoView/>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Sidebar -->
+        <DockPanel Grid.Column="0" Background="#1E3A5F" LastChildFill="True">
+
+            <!-- Logo -->
+            <Border DockPanel.Dock="Top" Padding="16,20,16,16" BorderBrush="#2E4D7B" BorderThickness="0,0,0,1">
+                <StackPanel>
+                    <TextBlock Text="🍿 POPCORN" FontSize="18" FontWeight="Bold"
+                               Foreground="White" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Cronometragem" FontSize="11"
+                               Foreground="#7FB3D3" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Menu -->
+            <StackPanel DockPanel.Dock="Top" Margin="0,10,0,0">
+                <Button Content="📊  Dashboard"        Command="{Binding NavigateDashboardCommand}"     Style="{StaticResource SidebarButton}"/>
+                <Button Content="🏁  Eventos"          Command="{Binding NavigateEventosCommand}"       Style="{StaticResource SidebarButton}"/>
+                <Button Content="👤  Atletas"          Command="{Binding NavigateAtletasCommand}"       Style="{StaticResource SidebarButton}"/>
+                <Button Content="🏷️  Categorias"      Command="{Binding NavigateCategoriasCommand}"    Style="{StaticResource SidebarButton}"/>
+                <Button Content="🏆  Campeonatos"      Command="{Binding NavigateCampeonatosCommand}"   Style="{StaticResource SidebarButton}"/>
+
+                <Button Content="🏃  Modalidades"      Command="{Binding NavigateModalidadesCommand}"   Style="{StaticResource SidebarButton}"/>
+
+                <Separator Background="#2E4D7B" Margin="12,8"/>
+
+                <Button Content="⏱️  Cronometragem"   Command="{Binding NavigateCronometragemCommand}" Style="{StaticResource SidebarButton}"/>
+                <Button Content="📋  Resultados"      Command="{Binding NavigateResultadosCommand}"    Style="{StaticResource SidebarButton}"/>
+            </StackPanel>
+        </DockPanel>
+
+        <!-- Conteúdo principal -->
+        <Grid Grid.Column="1" Background="#F5F6FA">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Barra de título da página -->
+            <Border Grid.Row="0" Background="White" Padding="20,14"
+                    BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
+                <TextBlock Text="{Binding CurrentPageTitle}" FontSize="18"
+                           FontWeight="SemiBold" Foreground="#1E3A5F"/>
+            </Border>
+
+            <!-- View atual -->
+            <ContentControl Grid.Row="1" Content="{Binding CurrentViewModel}"/>
+        </Grid>
+    </Grid>
+</Window>

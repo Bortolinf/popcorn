@@ -1,0 +1,26 @@
+# Build output
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Rider
+.idea/
+
+# dotnet ef migrations snapshot — manter; migrations — manter
+# Excluir apenas artefatos gerados
+*.DotSettings.user
+
+# Logs
+*.log
+
+# Publish output
+publish/
+
+# NuGet
+*.nupkg
+.nuget/
+packages/
