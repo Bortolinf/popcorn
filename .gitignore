@@ -22,5 +22,16 @@ publish/
 
 # NuGet
 *.nupkg
+*.snupkg
 .nuget/
 packages/
+project.lock.json
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Entity Framework (arquivos de banco local)
+*.mdf
+*.ldf
