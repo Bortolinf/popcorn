@@ -1,6 +1,7 @@
 <UserControl x:Class="Popcorn.UI.Views.EventoView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:helpers="clr-namespace:Popcorn.UI.Helpers"
              Background="#F5F6FA">
     <Grid Margin="20">
         <Grid.RowDefinitions>
@@ -30,10 +31,10 @@
                       Margin="0,0,16,0" GridLinesVisibility="Horizontal"
                       BorderBrush="#DDE" BorderThickness="1">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Nome"       Binding="{Binding Nome}"                     Width="*"/>
+                    <DataGridTextColumn Header="Nome"       Binding="{Binding Nome}"                         Width="*"/>
                     <DataGridTextColumn Header="Data"       Binding="{Binding Data, StringFormat=dd/MM/yyyy}" Width="90"/>
-                    <DataGridTextColumn Header="Modalidade" Binding="{Binding Modalidade.Descricao}"     Width="120"/>
-                    <DataGridTextColumn Header="Status"     Binding="{Binding Status}"                   Width="110"/>
+                    <DataGridTextColumn Header="Modalidade" Binding="{Binding Modalidade.Descricao}"          Width="120"/>
+                    <DataGridTextColumn Header="Status"     Binding="{Binding Status}"                        Width="110"/>
                 </DataGrid.Columns>
             </DataGrid>
 
@@ -86,13 +87,20 @@
 
                             <DataGrid ItemsSource="{Binding Trajetos}"
                                       SelectedItem="{Binding SelectedTrajeto}"
-                                      AutoGenerateColumns="False" IsReadOnly="True"
+                                      AutoGenerateColumns="False"
+                                      IsReadOnly="False"
+                                      CanUserAddRows="False" CanUserDeleteRows="False"
                                       MaxHeight="180" GridLinesVisibility="Horizontal"
                                       BorderBrush="#DDE" BorderThickness="1" Margin="0,0,0,8">
+                                <DataGrid.Resources>
+                                    <helpers:BindingProxy x:Key="VoltasNoTrajetoProxy" Data="{Binding VoltasNoTrajeto}"/>
+                                </DataGrid.Resources>
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Nome"      Binding="{Binding Nome}"                          Width="*"/>
-                                    <DataGridTextColumn Header="Dist.(km)" Binding="{Binding Distancia, StringFormat=N3}"    Width="80"/>
-                                    <DataGridTextColumn Header="Largada"   Binding="{Binding HoraLargada, StringFormat=dd/MM HH:mm}" Width="100"/>
+                                    <DataGridTextColumn Header="Nome"      Binding="{Binding Nome}"                               Width="*"   IsReadOnly="True"/>
+                                    <DataGridTextColumn Header="Dist.(km)" Binding="{Binding Distancia, StringFormat=N3}"         Width="75"  IsReadOnly="True"/>
+                                    <DataGridTextColumn Header="Largada"   Binding="{Binding HoraLargada, StringFormat=dd/MM HH:mm}" Width="90" IsReadOnly="True"/>
+                                    <DataGridTextColumn Header="Nro Voltas" Binding="{Binding QuantVoltas}" Width="80"
+                                                        Visibility="{Binding Data, Source={StaticResource VoltasNoTrajetoProxy}, Converter={StaticResource BoolToVisibility}}"/>
                                 </DataGrid.Columns>
                             </DataGrid>
 
@@ -102,7 +110,11 @@
                                         Padding="10,5" BorderThickness="0" Cursor="Hand" Margin="0,0,6,0"/>
                                 <Button Content="- Remover" Command="{Binding RemoveTrajetoCommand}"
                                         Background="#E74C3C" Foreground="White"
-                                        Padding="10,5" BorderThickness="0" Cursor="Hand"/>
+                                        Padding="10,5" BorderThickness="0" Cursor="Hand" Margin="0,0,6,0"/>
+                                <Button Content="Salvar Voltas" Command="{Binding AtualizarVoltasTrajetoCommand}"
+                                        Background="#2980B9" Foreground="White"
+                                        Padding="10,5" BorderThickness="0" Cursor="Hand"
+                                        Visibility="{Binding VoltasNoTrajeto, Converter={StaticResource BoolToVisibility}}"/>
                             </StackPanel>
 
                             <!-- Mini-form: adicionar trajeto -->
@@ -121,7 +133,14 @@
                                              Padding="5,3" Margin="0,0,0,8" BorderBrush="#BDC3C7"/>
 
                                     <TextBlock Text="Hora de Largada" FontSize="11" Foreground="#555" Margin="0,0,0,3"/>
-                                    <DatePicker SelectedDate="{Binding NovoTrajetoHoraLargada}" Margin="0,0,0,10"/>
+                                    <DatePicker SelectedDate="{Binding NovoTrajetoHoraLargada}" Margin="0,0,0,8"/>
+
+                                    <!-- Número de Voltas — visível somente quando DefinicaoVoltas = NoTrajeto -->
+                                    <StackPanel Visibility="{Binding VoltasNoTrajeto, Converter={StaticResource BoolToVisibility}}">
+                                        <TextBlock Text="Nro de Voltas" FontSize="11" Foreground="#555" Margin="0,0,0,3"/>
+                                        <TextBox Text="{Binding NovoTrajetoNumeroVoltas, UpdateSourceTrigger=PropertyChanged}"
+                                                 Padding="5,3" Margin="0,0,0,8" BorderBrush="#BDC3C7"/>
+                                    </StackPanel>
 
                                     <StackPanel Orientation="Horizontal">
                                         <Button Content="Confirmar" Command="{Binding ConfirmarTrajetoCommand}"
@@ -148,12 +167,18 @@
 
                             <DataGrid ItemsSource="{Binding CategoriasDoTrajeto}"
                                       SelectedItem="{Binding SelectedCategoriaDoTrajeto}"
-                                      AutoGenerateColumns="False" IsReadOnly="True"
+                                      AutoGenerateColumns="False"
+                                      IsReadOnly="False"
+                                      CanUserAddRows="False" CanUserDeleteRows="False"
                                       MaxHeight="160" GridLinesVisibility="Horizontal"
                                       BorderBrush="#DDE" BorderThickness="1" Margin="0,0,0,8">
+                                <DataGrid.Resources>
+                                    <helpers:BindingProxy x:Key="VoltasNaCategoriaProxy" Data="{Binding VoltasNaCategoria}"/>
+                                </DataGrid.Resources>
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Categoria"  Binding="{Binding Categoria.Descricao}" Width="*"/>
-                                    <DataGridTextColumn Header="Nro Voltas" Binding="{Binding NroVoltas}"           Width="90"/>
+                                    <DataGridTextColumn Header="Categoria"  Binding="{Binding Categoria.Descricao}" Width="*"  IsReadOnly="True"/>
+                                    <DataGridTextColumn Header="Nro Voltas" Binding="{Binding NroVoltas}"           Width="90"
+                                                        Visibility="{Binding Data, Source={StaticResource VoltasNaCategoriaProxy}, Converter={StaticResource BoolToVisibility}}"/>
                                 </DataGrid.Columns>
                             </DataGrid>
 
@@ -163,7 +188,11 @@
                                         Padding="10,5" BorderThickness="0" Cursor="Hand" Margin="0,0,6,0"/>
                                 <Button Content="- Remover" Command="{Binding RemoveCategoriaCommand}"
                                         Background="#E74C3C" Foreground="White"
-                                        Padding="10,5" BorderThickness="0" Cursor="Hand"/>
+                                        Padding="10,5" BorderThickness="0" Cursor="Hand" Margin="0,0,6,0"/>
+                                <Button Content="Salvar Voltas" Command="{Binding AtualizarVoltasCategoriaCommand}"
+                                        Background="#2980B9" Foreground="White"
+                                        Padding="10,5" BorderThickness="0" Cursor="Hand"
+                                        Visibility="{Binding VoltasNaCategoria, Converter={StaticResource BoolToVisibility}}"/>
                             </StackPanel>
 
                             <!-- Mini-form: adicionar categorias (checklist) -->
@@ -179,7 +208,7 @@
                                                    FontWeight="SemiBold" Foreground="#1E3A5F" VerticalAlignment="Center"/>
                                         <TextBlock Grid.Column="1" Text="Voltas" FontSize="10" Foreground="#777"
                                                    HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                   Visibility="{Binding PossuiVoltas, Converter={StaticResource BoolToVisibility}}"/>
+                                                   Visibility="{Binding VoltasNaCategoria, Converter={StaticResource BoolToVisibility}}"/>
                                     </Grid>
 
                                     <ItemsControl ItemsSource="{Binding CategoriasSelecionaveis}" MaxHeight="220"
@@ -210,7 +239,7 @@
                                                              Text="{Binding NroVoltas, UpdateSourceTrigger=PropertyChanged}"
                                                              Padding="4,2" BorderBrush="#BDC3C7"
                                                              VerticalAlignment="Center" ToolTip="Nro de Voltas"
-                                                             Visibility="{Binding DataContext.PossuiVoltas,
+                                                             Visibility="{Binding DataContext.VoltasNaCategoria,
                                                                           RelativeSource={RelativeSource AncestorType=ItemsControl},
                                                                           Converter={StaticResource BoolToVisibility}}"/>
                                                 </Grid>

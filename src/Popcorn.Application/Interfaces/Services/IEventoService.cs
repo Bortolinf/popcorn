@@ -13,9 +13,11 @@ public interface IEventoService
     Task DeleteAsync(int id);
 
     Task<EventoTrajeto> AddTrajetoAsync(EventoTrajeto trajeto);
+    Task UpdateTrajetoAsync(EventoTrajeto trajeto);
     Task RemoveTrajetoAsync(int trajetoId);
 
     Task<EventoCategoria> AddCategoriaAsync(EventoCategoria eventoCategoria);
+    Task UpdateCategoriaAsync(EventoCategoria eventoCategoria);
     Task RemoveCategoriaAsync(int eventoCategoriaId);
 
     Task<InscricaoAtleta> InscreverAtletaAsync(InscricaoAtleta inscricao);

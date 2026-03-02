@@ -28,9 +28,27 @@
                       Margin="0,0,16,0" GridLinesVisibility="Horizontal"
                       BorderBrush="#DDE" BorderThickness="1">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Descrição"        Binding="{Binding Descricao}"       Width="*"/>
-                    <DataGridCheckBoxColumn Header="Possui Voltas"  Binding="{Binding PossuiVoltas}"   Width="110"/>
-                    <DataGridCheckBoxColumn Header="Largada Baterias" Binding="{Binding LargadaBaterias}" Width="130"/>
+                    <DataGridTextColumn Header="Descrição"          Binding="{Binding Descricao}"       Width="*"/>
+                    <DataGridCheckBoxColumn Header="Possui Voltas"   Binding="{Binding PossuiVoltas}"   Width="105"/>
+                    <DataGridTemplateColumn Header="Def. Voltas" Width="100">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock VerticalAlignment="Center" Padding="4,0">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Text" Value="Na Categoria"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding DefinicaoVoltas}" Value="NoTrajeto">
+                                                    <Setter Property="Text" Value="No Trajeto"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    <DataGridCheckBoxColumn Header="Largada Baterias" Binding="{Binding LargadaBaterias}" Width="120"/>
                 </DataGrid.Columns>
             </DataGrid>
 
@@ -47,8 +65,21 @@
 
                     <CheckBox Content="Possui Voltas" IsChecked="{Binding PossuiVoltas}"
                               Margin="0,0,0,8"/>
+
+                    <StackPanel IsEnabled="{Binding DefinicaoVoltasHabilitado}" Margin="0,0,0,8">
+                        <TextBlock Text="Definição de Voltas" FontSize="11" Foreground="#555" Margin="0,0,0,5"/>
+                        <RadioButton Content="Na Categoria"
+                                     GroupName="DefVoltas"
+                                     IsChecked="{Binding DefinicaoVoltasNaCategoria, Mode=TwoWay}"
+                                     Margin="0,0,0,4" FontSize="12"/>
+                        <RadioButton Content="No Trajeto"
+                                     GroupName="DefVoltas"
+                                     IsChecked="{Binding DefinicaoVoltasNoTrajeto, Mode=TwoWay}"
+                                     FontSize="12"/>
+                    </StackPanel>
+
                     <CheckBox Content="Largada em Baterias" IsChecked="{Binding LargadaBaterias}"
-                              Margin="0,0,0,20"/>
+                              Margin="0,8,0,20"/>
 
                     <StackPanel Orientation="Horizontal">
                         <Button Content="Salvar" Command="{Binding SalvarCommand}"

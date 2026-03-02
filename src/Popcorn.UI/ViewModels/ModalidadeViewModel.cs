@@ -1,5 +1,6 @@
 using Popcorn.Application.Interfaces.Repositories;
 using Popcorn.Domain.Entities;
+using Popcorn.Domain.Enums;
 using Popcorn.UI.Commands;
 using Popcorn.UI.ViewModels.Base;
 using System.Collections.ObjectModel;
@@ -16,6 +17,7 @@ public class ModalidadeViewModel : ViewModelBase, ILoadable
     private string _descricao = string.Empty;
     private bool _possuiVoltas;
     private bool _largadaBaterias;
+    private DefinicaoVoltas _definicaoVoltas = DefinicaoVoltas.NaCategoria;
     private bool _isEditing;
     private string _mensagem = string.Empty;
 
@@ -27,14 +29,39 @@ public class ModalidadeViewModel : ViewModelBase, ILoadable
     }
 
     public string Descricao     { get => _descricao;       set => SetProperty(ref _descricao, value); }
-    public bool PossuiVoltas    { get => _possuiVoltas;    set => SetProperty(ref _possuiVoltas, value); }
     public bool LargadaBaterias { get => _largadaBaterias; set => SetProperty(ref _largadaBaterias, value); }
     public bool IsEditing       { get => _isEditing;       set => SetProperty(ref _isEditing, value); }
     public string Mensagem      { get => _mensagem;        set => SetProperty(ref _mensagem, value); }
 
-    public ICommand NovoCommand    { get; }
-    public ICommand SalvarCommand  { get; }
-    public ICommand ExcluirCommand { get; }
+    public bool PossuiVoltas
+    {
+        get => _possuiVoltas;
+        set { SetProperty(ref _possuiVoltas, value); OnPropertyChanged(nameof(DefinicaoVoltasHabilitado)); }
+    }
+
+    public bool DefinicaoVoltasHabilitado => _possuiVoltas;
+
+    public bool DefinicaoVoltasNaCategoria
+    {
+        get => _definicaoVoltas == DefinicaoVoltas.NaCategoria;
+        set
+        {
+            if (value) { _definicaoVoltas = DefinicaoVoltas.NaCategoria; OnPropertyChanged(); OnPropertyChanged(nameof(DefinicaoVoltasNoTrajeto)); }
+        }
+    }
+
+    public bool DefinicaoVoltasNoTrajeto
+    {
+        get => _definicaoVoltas == DefinicaoVoltas.NoTrajeto;
+        set
+        {
+            if (value) { _definicaoVoltas = DefinicaoVoltas.NoTrajeto; OnPropertyChanged(); OnPropertyChanged(nameof(DefinicaoVoltasNaCategoria)); }
+        }
+    }
+
+    public ICommand NovoCommand     { get; }
+    public ICommand SalvarCommand   { get; }
+    public ICommand ExcluirCommand  { get; }
     public ICommand CancelarCommand { get; }
 
     public ModalidadeViewModel(IModalidadeRepository modalidadeRepository)
@@ -58,6 +85,9 @@ public class ModalidadeViewModel : ViewModelBase, ILoadable
         Descricao = string.Empty;
         PossuiVoltas = false;
         LargadaBaterias = false;
+        _definicaoVoltas = DefinicaoVoltas.NaCategoria;
+        OnPropertyChanged(nameof(DefinicaoVoltasNaCategoria));
+        OnPropertyChanged(nameof(DefinicaoVoltasNoTrajeto));
         IsEditing = true;
         Mensagem = string.Empty;
     }
@@ -68,20 +98,27 @@ public class ModalidadeViewModel : ViewModelBase, ILoadable
         {
             if (SelectedModalidade == null)
             {
-                var nova = new Modalidade { Descricao = Descricao, PossuiVoltas = PossuiVoltas, LargadaBaterias = LargadaBaterias };
+                var nova = new Modalidade
+                {
+                    Descricao       = Descricao,
+                    PossuiVoltas    = PossuiVoltas,
+                    LargadaBaterias = LargadaBaterias,
+                    DefinicaoVoltas = _definicaoVoltas
+                };
                 await _modalidadeRepository.AddAsync(nova);
                 await _modalidadeRepository.SaveChangesAsync();
             }
             else
             {
-                SelectedModalidade.Descricao = Descricao;
-                SelectedModalidade.PossuiVoltas = PossuiVoltas;
+                SelectedModalidade.Descricao       = Descricao;
+                SelectedModalidade.PossuiVoltas    = PossuiVoltas;
                 SelectedModalidade.LargadaBaterias = LargadaBaterias;
+                SelectedModalidade.DefinicaoVoltas = _definicaoVoltas;
                 await _modalidadeRepository.UpdateAsync(SelectedModalidade);
                 await _modalidadeRepository.SaveChangesAsync();
             }
 
-            Mensagem = "Salvo com sucesso.";
+            Mensagem  = "Salvo com sucesso.";
             IsEditing = false;
             await LoadAsync();
         }
@@ -95,7 +132,7 @@ public class ModalidadeViewModel : ViewModelBase, ILoadable
         {
             await _modalidadeRepository.DeleteAsync(SelectedModalidade);
             await _modalidadeRepository.SaveChangesAsync();
-            Mensagem = "Excluído com sucesso.";
+            Mensagem  = "Excluído com sucesso.";
             IsEditing = false;
             await LoadAsync();
         }
@@ -106,9 +143,13 @@ public class ModalidadeViewModel : ViewModelBase, ILoadable
 
     private void PreencherFormulario(Modalidade m)
     {
-        Descricao = m.Descricao;
-        PossuiVoltas = m.PossuiVoltas;
+        Descricao       = m.Descricao;
+        PossuiVoltas    = m.PossuiVoltas;
         LargadaBaterias = m.LargadaBaterias;
+        _definicaoVoltas = m.DefinicaoVoltas;
+        OnPropertyChanged(nameof(DefinicaoVoltasNaCategoria));
+        OnPropertyChanged(nameof(DefinicaoVoltasNoTrajeto));
+        OnPropertyChanged(nameof(DefinicaoVoltasHabilitado));
         IsEditing = true;
     }
 }

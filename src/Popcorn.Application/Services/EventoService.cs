@@ -65,6 +65,12 @@ public class EventoService : IEventoService
         return trajeto;
     }
 
+    public async Task UpdateTrajetoAsync(EventoTrajeto trajeto)
+    {
+        await _trajetoRepository.UpdateAsync(trajeto);
+        await _trajetoRepository.SaveChangesAsync();
+    }
+
     public async Task RemoveTrajetoAsync(int trajetoId)
     {
         var trajeto = await _trajetoRepository.GetByIdAsync(trajetoId)
@@ -80,6 +86,12 @@ public class EventoService : IEventoService
         await _eventoCategoriaRepository.AddAsync(eventoCategoria);
         await _eventoCategoriaRepository.SaveChangesAsync();
         return eventoCategoria;
+    }
+
+    public async Task UpdateCategoriaAsync(EventoCategoria eventoCategoria)
+    {
+        await _eventoCategoriaRepository.UpdateAsync(eventoCategoria);
+        await _eventoCategoriaRepository.SaveChangesAsync();
     }
 
     public async Task RemoveCategoriaAsync(int eventoCategoriaId)

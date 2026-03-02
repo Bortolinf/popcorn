@@ -1,6 +1,7 @@
 using Popcorn.Application.Interfaces.Repositories;
 using Popcorn.Application.Interfaces.Services;
 using Popcorn.Domain.Entities;
+using Popcorn.Domain.Enums;
 using Popcorn.UI.Commands;
 using Popcorn.UI.ViewModels.Base;
 using System.Collections.ObjectModel;
@@ -35,6 +36,7 @@ public class EventoViewModel : ViewModelBase, ILoadable
     private string _novoTrajetoNome = string.Empty;
     private decimal _novoTrajetoDistancia;
     private DateTime? _novoTrajetoHoraLargada;
+    private int _novoTrajetoNumeroVoltas;
     private bool _isAddingTrajeto;
 
     // --- Categorias do Trajeto ---
@@ -77,9 +79,23 @@ public class EventoViewModel : ViewModelBase, ILoadable
     public Modalidade? SelectedModalidade
     {
         get => _selectedModalidade;
-        set { SetProperty(ref _selectedModalidade, value); OnPropertyChanged(nameof(PossuiVoltas)); }
+        set
+        {
+            SetProperty(ref _selectedModalidade, value);
+            OnPropertyChanged(nameof(VoltasNaCategoria));
+            OnPropertyChanged(nameof(VoltasNoTrajeto));
+        }
     }
-    public bool PossuiVoltas => _selectedModalidade?.PossuiVoltas ?? false;
+
+    /// <summary>Modality has laps AND laps are defined per category.</summary>
+    public bool VoltasNaCategoria =>
+        (_selectedModalidade?.PossuiVoltas ?? false) &&
+        (_selectedModalidade?.DefinicaoVoltas == DefinicaoVoltas.NaCategoria);
+
+    /// <summary>Modality has laps AND laps are defined per trajectory.</summary>
+    public bool VoltasNoTrajeto =>
+        (_selectedModalidade?.PossuiVoltas ?? false) &&
+        (_selectedModalidade?.DefinicaoVoltas == DefinicaoVoltas.NoTrajeto);
 
     // Properties — Trajetos
     public ObservableCollection<EventoTrajeto> Trajetos { get => _trajetos; set => SetProperty(ref _trajetos, value); }
@@ -97,10 +113,11 @@ public class EventoViewModel : ViewModelBase, ILoadable
     public bool HasSelectedTrajeto => _selectedTrajeto != null;
 
     // Properties — Mini-form Trajeto
-    public string NovoTrajetoNome       { get => _novoTrajetoNome;       set => SetProperty(ref _novoTrajetoNome, value); }
-    public decimal NovoTrajetoDistancia { get => _novoTrajetoDistancia;  set => SetProperty(ref _novoTrajetoDistancia, value); }
-    public DateTime? NovoTrajetoHoraLargada { get => _novoTrajetoHoraLargada; set => SetProperty(ref _novoTrajetoHoraLargada, value); }
-    public bool IsAddingTrajeto         { get => _isAddingTrajeto;        set => SetProperty(ref _isAddingTrajeto, value); }
+    public string NovoTrajetoNome           { get => _novoTrajetoNome;          set => SetProperty(ref _novoTrajetoNome, value); }
+    public decimal NovoTrajetoDistancia     { get => _novoTrajetoDistancia;     set => SetProperty(ref _novoTrajetoDistancia, value); }
+    public DateTime? NovoTrajetoHoraLargada { get => _novoTrajetoHoraLargada;   set => SetProperty(ref _novoTrajetoHoraLargada, value); }
+    public int NovoTrajetoNumeroVoltas      { get => _novoTrajetoNumeroVoltas;   set => SetProperty(ref _novoTrajetoNumeroVoltas, value); }
+    public bool IsAddingTrajeto             { get => _isAddingTrajeto;           set => SetProperty(ref _isAddingTrajeto, value); }
 
     // Properties — Categorias do Trajeto
     public ObservableCollection<EventoCategoria> CategoriasDoTrajeto { get => _categoriasDoTrajeto; set => SetProperty(ref _categoriasDoTrajeto, value); }
@@ -112,20 +129,22 @@ public class EventoViewModel : ViewModelBase, ILoadable
     public bool IsAddingCategoria { get => _isAddingCategoria; set => SetProperty(ref _isAddingCategoria, value); }
 
     // Commands
-    public ICommand NovoCommand    { get; }
-    public ICommand SalvarCommand  { get; }
-    public ICommand ExcluirCommand { get; }
+    public ICommand NovoCommand     { get; }
+    public ICommand SalvarCommand   { get; }
+    public ICommand ExcluirCommand  { get; }
     public ICommand CancelarCommand { get; }
 
-    public ICommand AddTrajetoCommand       { get; }
-    public ICommand RemoveTrajetoCommand    { get; }
-    public ICommand ConfirmarTrajetoCommand { get; }
-    public ICommand CancelarTrajetoCommand  { get; }
+    public ICommand AddTrajetoCommand             { get; }
+    public ICommand RemoveTrajetoCommand          { get; }
+    public ICommand ConfirmarTrajetoCommand       { get; }
+    public ICommand CancelarTrajetoCommand        { get; }
+    public ICommand AtualizarVoltasTrajetoCommand { get; }
 
-    public ICommand AddCategoriaCommand       { get; }
-    public ICommand RemoveCategoriaCommand    { get; }
-    public ICommand ConfirmarCategoriaCommand { get; }
-    public ICommand CancelarCategoriaCommand  { get; }
+    public ICommand AddCategoriaCommand              { get; }
+    public ICommand RemoveCategoriaCommand           { get; }
+    public ICommand ConfirmarCategoriaCommand        { get; }
+    public ICommand CancelarCategoriaCommand         { get; }
+    public ICommand AtualizarVoltasCategoriaCommand  { get; }
 
     public EventoViewModel(
         IEventoService eventoService,
@@ -143,24 +162,26 @@ public class EventoViewModel : ViewModelBase, ILoadable
         ExcluirCommand  = new AsyncRelayCommand(ExcluirAsync, _ => SelectedEvento != null);
         CancelarCommand = new RelayCommand(_ => Cancelar());
 
-        AddTrajetoCommand       = new RelayCommand(_ => { IsAddingTrajeto = true; LimparFormTrajeto(); }, _ => SelectedEvento != null);
-        RemoveTrajetoCommand    = new AsyncRelayCommand(RemoveTrajetoAsync, _ => SelectedTrajeto != null);
-        ConfirmarTrajetoCommand = new AsyncRelayCommand(ConfirmarTrajetoAsync, _ => !string.IsNullOrWhiteSpace(NovoTrajetoNome));
-        CancelarTrajetoCommand  = new RelayCommand(_ => { IsAddingTrajeto = false; LimparFormTrajeto(); });
+        AddTrajetoCommand             = new RelayCommand(_ => { IsAddingTrajeto = true; LimparFormTrajeto(); }, _ => SelectedEvento != null);
+        RemoveTrajetoCommand          = new AsyncRelayCommand(RemoveTrajetoAsync, _ => SelectedTrajeto != null);
+        ConfirmarTrajetoCommand       = new AsyncRelayCommand(ConfirmarTrajetoAsync, _ => !string.IsNullOrWhiteSpace(NovoTrajetoNome));
+        CancelarTrajetoCommand        = new RelayCommand(_ => { IsAddingTrajeto = false; LimparFormTrajeto(); });
+        AtualizarVoltasTrajetoCommand = new AsyncRelayCommand(AtualizarVoltasTrajetoAsync, _ => SelectedEvento != null);
 
-        AddCategoriaCommand       = new RelayCommand(_ => { IsAddingCategoria = true; PopularCategoriasSelecionaveis(); }, _ => SelectedTrajeto != null);
-        RemoveCategoriaCommand    = new AsyncRelayCommand(RemoveCategoriaAsync, _ => SelectedCategoriaDoTrajeto != null);
-        ConfirmarCategoriaCommand = new AsyncRelayCommand(ConfirmarCategoriaAsync);
-        CancelarCategoriaCommand  = new RelayCommand(_ => { IsAddingCategoria = false; LimparFormCategoria(); });
+        AddCategoriaCommand             = new RelayCommand(_ => { IsAddingCategoria = true; PopularCategoriasSelecionaveis(); }, _ => SelectedTrajeto != null);
+        RemoveCategoriaCommand          = new AsyncRelayCommand(RemoveCategoriaAsync, _ => SelectedCategoriaDoTrajeto != null);
+        ConfirmarCategoriaCommand       = new AsyncRelayCommand(ConfirmarCategoriaAsync);
+        CancelarCategoriaCommand        = new RelayCommand(_ => { IsAddingCategoria = false; LimparFormCategoria(); });
+        AtualizarVoltasCategoriaCommand = new AsyncRelayCommand(AtualizarVoltasCategoriaAsync, _ => SelectedTrajeto != null);
     }
 
     public async Task LoadAsync()
     {
-        var eventos    = await _eventoService.GetAllAsync();
-        Eventos        = new ObservableCollection<Evento>(eventos);
+        var eventos = await _eventoService.GetAllAsync();
+        Eventos = new ObservableCollection<Evento>(eventos);
 
         var modalidades = await _modalidadeRepository.GetAllAsync();
-        Modalidades    = new ObservableCollection<Modalidade>(modalidades);
+        Modalidades = new ObservableCollection<Modalidade>(modalidades);
 
         var categorias = await _categoriaRepository.GetAllAsync();
         TodasCategorias = new ObservableCollection<Categoria>(categorias);
@@ -204,8 +225,8 @@ public class EventoViewModel : ViewModelBase, ILoadable
             }
             else
             {
-                SelectedEvento.Nome        = Nome;
-                SelectedEvento.Data        = Data;
+                SelectedEvento.Nome         = Nome;
+                SelectedEvento.Data         = Data;
                 SelectedEvento.ModalidadeId = SelectedModalidade?.Id;
                 await _eventoService.UpdateAsync(SelectedEvento);
             }
@@ -247,7 +268,8 @@ public class EventoViewModel : ViewModelBase, ILoadable
                 EventoId    = SelectedEvento.Id,
                 Nome        = NovoTrajetoNome,
                 Distancia   = NovoTrajetoDistancia,
-                HoraLargada = NovoTrajetoHoraLargada
+                HoraLargada = NovoTrajetoHoraLargada,
+                QuantVoltas = VoltasNoTrajeto ? NovoTrajetoNumeroVoltas : 0
             };
             await _eventoService.AddTrajetoAsync(trajeto);
             IsAddingTrajeto = false;
@@ -271,6 +293,18 @@ public class EventoViewModel : ViewModelBase, ILoadable
         catch (Exception ex) { Mensagem = $"Erro: {ex.Message}"; }
     }
 
+    private async Task AtualizarVoltasTrajetoAsync(object? _)
+    {
+        if (SelectedEvento == null) return;
+        try
+        {
+            foreach (var t in Trajetos)
+                await _eventoService.UpdateTrajetoAsync(t);
+            Mensagem = "Voltas dos trajetos atualizadas.";
+        }
+        catch (Exception ex) { Mensagem = $"Erro: {ex.Message}"; }
+    }
+
     // Categoria
     private async Task ConfirmarCategoriaAsync(object? _)
     {
@@ -288,7 +322,7 @@ public class EventoViewModel : ViewModelBase, ILoadable
                     EventoId        = SelectedEvento.Id,
                     EventoTrajetoId = SelectedTrajeto.Id,
                     CategoriaId     = item.Categoria.Id,
-                    NroVoltas       = PossuiVoltas ? item.NroVoltas : null
+                    NroVoltas       = VoltasNaCategoria ? item.NroVoltas : null
                 };
                 await _eventoService.AddCategoriaAsync(ec);
             }
@@ -313,6 +347,18 @@ public class EventoViewModel : ViewModelBase, ILoadable
             SelectedCategoriaDoTrajeto = null;
             Mensagem = "Categoria removida.";
             await RecarregarTrajetosAsync(previousTrajetoId);
+        }
+        catch (Exception ex) { Mensagem = $"Erro: {ex.Message}"; }
+    }
+
+    private async Task AtualizarVoltasCategoriaAsync(object? _)
+    {
+        if (SelectedTrajeto == null) return;
+        try
+        {
+            foreach (var ec in CategoriasDoTrajeto)
+                await _eventoService.UpdateCategoriaAsync(ec);
+            Mensagem = "Voltas das categorias atualizadas.";
         }
         catch (Exception ex) { Mensagem = $"Erro: {ex.Message}"; }
     }
@@ -352,9 +398,10 @@ public class EventoViewModel : ViewModelBase, ILoadable
 
     private void LimparFormTrajeto()
     {
-        NovoTrajetoNome        = string.Empty;
-        NovoTrajetoDistancia   = 0;
-        NovoTrajetoHoraLargada = null;
+        NovoTrajetoNome         = string.Empty;
+        NovoTrajetoDistancia    = 0;
+        NovoTrajetoHoraLargada  = null;
+        NovoTrajetoNumeroVoltas = 0;
     }
 
     private void PopularCategoriasSelecionaveis()
